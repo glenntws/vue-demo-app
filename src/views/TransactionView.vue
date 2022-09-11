@@ -146,11 +146,7 @@ function handleDialogClose()
         </el-form-item>
         <el-form-item label="Title" :label-width="formLabelWidth">
           <el-select v-model="editAddForm.type" placeholder="Select the type of the transaction">
-            <el-option label="Food" value="food" />
-            <el-option label="Housing" value="housing" />
-            <el-option label="Loan" value="loan" />
-            <el-option label="Income" value="income" />
-            <el-option label="Other" value="other" />
+            <el-option v-for="value, index in (Object.values(TransactionType))" :value="value" :label="getNameOfTransactionType(value)" />
           </el-select>
         </el-form-item>
       </el-form>

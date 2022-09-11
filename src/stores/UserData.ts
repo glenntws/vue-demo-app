@@ -9,8 +9,7 @@ export enum TransactionType {
   HOUSING = "housing",
   LOAN = "loan",
   INCOME = "income",
-  OTHER = "other",
-  ALL = "all"
+  OTHER = "other"
 }
 
 export type TransactionData = {
@@ -29,6 +28,7 @@ export type UserDataType = {
     transactions: TransactionData[]
 }
 
+// Translator to get display name of a transaction type
 export function getNameOfTransactionType(type: TransactionType): string {
   // This for should could have been made more compact (with a map or so) but it's good enough for the demo
   switch (type) {
@@ -43,6 +43,11 @@ export function getNameOfTransactionType(type: TransactionType): string {
     default:
       return "Other";
   }
+}
+
+// Helper function to make string out of money amount
+export function amountToString(amount: number, plusPrefix: boolean = false): string {
+  return ( ((plusPrefix && amount > 0) ? "+" : "") + (amount / 100).toFixed(2) + " €" );
 }
 
 export const useUserDataStore = defineStore({
@@ -63,7 +68,7 @@ export const useUserDataStore = defineStore({
         return balanceAtTime;
       },
     summarizedExpenditures: (state) => 
-      (startDate: number, endDate: number, type: TransactionType = TransactionType.ALL): number => {
+      (startDate: number, endDate: number, type: TransactionType | null = null): number => {
         // make sure that endDate is after startDate. Otherwise, we just return 0 as fallback.
         if(startDate > endDate)
         {
@@ -73,7 +78,7 @@ export const useUserDataStore = defineStore({
         {
           // filter out the relevant transactions
           const expenditures: TransactionData[] = state.transactions.filter((transaction) =>
-          ((transaction.date >= startDate) && (transaction.date <= endDate) && (transaction.amount < 0) && (type === TransactionType.ALL || transaction.type === type)));
+          ((transaction.date >= startDate) && (transaction.date <= endDate) && (transaction.amount < 0) && (type === null || transaction.type === type)));
 
           let expendituresSum = 0;
 
@@ -86,7 +91,7 @@ export const useUserDataStore = defineStore({
         }
       },
     summarizedEarnings: (state) => 
-      (startDate: number, endDate: number, type: TransactionType = TransactionType.ALL): number => {
+      (startDate: number, endDate: number, type: TransactionType | null = null): number => {
         // make sure that endDate is after startDate. Otherwise, we just return 0 as fallback.
         if(startDate > endDate)
         {
@@ -96,7 +101,7 @@ export const useUserDataStore = defineStore({
         {
           // filter out the relevant transactions
           const earnings: TransactionData[] = state.transactions.filter((transaction) =>
-          ((transaction.date >= startDate) && (transaction.date <= endDate) && (transaction.amount > 0) && (type === TransactionType.ALL || transaction.type === type)));
+          ((transaction.date >= startDate) && (transaction.date <= endDate) && (transaction.amount > 0) && (type === null || transaction.type === type)));
 
           let earningsSum = 0;
 
@@ -109,7 +114,7 @@ export const useUserDataStore = defineStore({
         }
       },
     summarizedCashflow: (state) => 
-      (startDate: number, endDate: number, type: TransactionType = TransactionType.ALL): number => {
+      (startDate: number, endDate: number, type: TransactionType | null = null): number => {
         // make sure that endDate is after startDate. Otherwise, we just return 0 as fallback.
         if(startDate > endDate)
         {
@@ -119,7 +124,7 @@ export const useUserDataStore = defineStore({
         {
           // filter out the relevant transactions
           const transactions: TransactionData[] = state.transactions.filter((transaction) =>
-          ((transaction.date >= startDate) && (transaction.date <= endDate) && (type === TransactionType.ALL || transaction.type === type)));
+          ((transaction.date >= startDate) && (transaction.date <= endDate) && (type === null || transaction.type === type)));
 
           let cashflowSum = 0;
 

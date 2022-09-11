@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TransactionType, useUserDataStore } from "../stores/UserData";
+import { TransactionType, amountToString, useUserDataStore, getNameOfTransactionType } from "../stores/UserData";
 import InfoBox from "../components/InfoBox.vue";
 import LineChart from "../components/LineChart.vue";
 import PieChart from "../components/PieChart.vue";
@@ -9,9 +9,6 @@ import type { ChartData } from "chart.js";
 
 const userDataStore = useUserDataStore();
 
-function amountToString(amount: number, plusPrefix: boolean = false): string {
-  return ( ((plusPrefix && amount > 0) ? "+" : "") + (amount / 100).toFixed(2) + " €" );
-}
 
 // Balance info
 const currentBalance: Ref<number> = computed(() => {
@@ -20,6 +17,7 @@ const currentBalance: Ref<number> = computed(() => {
 const currentBalanceAnd30DaysAgoDelta: Ref<number> = computed(() => {
   return (userDataStore.currentBalance - userDataStore.balance(dayjs().subtract(30, 'days').unix()));
 });
+
 
 // Cashflow info
 const last30DaysCashflow: Ref<number> = computed(() => {
@@ -30,6 +28,7 @@ const last30DaysCashflowAndPrevious30DaysDelta: Ref<number> = computed(() => {
           userDataStore.summarizedCashflow(dayjs().subtract(60, 'days').unix(), dayjs().subtract(30, 'days').unix());
 });
 
+
 // Expenditure info
 const last30DaysExpenditures: Ref<number> = computed(() => {
   return userDataStore.summarizedExpenditures(dayjs().subtract(30, 'days').unix(), dayjs().unix());
@@ -38,6 +37,7 @@ const last30DaysExpendituresAndPrevious30DaysDelta: Ref<number> = computed(() =>
   return userDataStore.summarizedExpenditures(dayjs().subtract(30, 'days').unix(), dayjs().unix()) -
           userDataStore.summarizedExpenditures(dayjs().subtract(60, 'days').unix(), dayjs().subtract(30, 'days').unix());
 });
+
 
 // Earning info
 const last30DaysEarnings: Ref<number> = computed(() => {
@@ -48,56 +48,66 @@ const last30DaysEarningsAndPrevious30DaysDelta: Ref<number> = computed(() => {
           userDataStore.summarizedEarnings(dayjs().subtract(60, 'days').unix(), dayjs().subtract(30, 'days').unix());
 });
 
-const cashAssetDevelopmentGraphData = computed(() => {
-  let graphData: ChartData<'line'> = {labels: [], datasets: [{data: []}]};
+
+const cashAssetDevelopmentChartData = computed(() => {
+  let chartData: ChartData<'line'> = {labels: [], datasets: [{data: []}]};
 
   for(let i = 0; i < 53; i++)
   {
-    graphData.labels?.push(
+    chartData.labels?.push(
       dayjs().subtract(i, 'weeks').format()
     );
-    graphData.datasets[0].data.push(
+    chartData.datasets[0].data.push(
       (userDataStore.balance(dayjs().subtract(i, 'weeks').unix()) / 100)
     );
   }
 
-  console.log(graphData);
-  return graphData;
+  return chartData;
 });
 
-const earningsByGroupGraphData = computed(() => {
-  return {
-    labels: [ 'Food', 'Housing', 'Load', 'Income', 'Other' ],
-    datasets: [
-      { 
-        data: [
-          (userDataStore.summarizedEarnings(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.FOOD) / 100),
-          (userDataStore.summarizedEarnings(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.HOUSING) / 100),
-          (userDataStore.summarizedEarnings(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.LOAN) / 100),
-          (userDataStore.summarizedEarnings(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.INCOME) / 100),
-          (userDataStore.summarizedEarnings(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.OTHER) / 100),
-        ]
-      }
-    ]
-  };
+
+const earningsByGroupChartData = computed(() => {
+  let chartData: ChartData<'pie'> = { labels: [], datasets: [ { data: [] } ] };
+
+  Object.values(TransactionType).forEach((type) => {
+    chartData.labels?.push(getNameOfTransactionType(type));
+    chartData.datasets[0].data.push((userDataStore.summarizedEarnings(dayjs().subtract(12, 'months').unix(), dayjs().unix(), type) / 100))
+  });
+
+  return chartData;
 });
 
-// Expenditures by group graph data
-const expendituresByGroupGraphData = computed(() => {
-  return {
-    labels: [ 'Food', 'Housing', 'Load', 'Income', 'Other' ],
-    datasets: [
-      { 
-        data: [
-          (userDataStore.summarizedExpenditures(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.FOOD) / 100),
-          (userDataStore.summarizedExpenditures(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.HOUSING) / 100),
-          (userDataStore.summarizedExpenditures(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.LOAN) / 100),
-          (userDataStore.summarizedExpenditures(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.INCOME) / 100),
-          (userDataStore.summarizedExpenditures(dayjs().subtract(12, 'months').unix(), dayjs().unix(), TransactionType.OTHER) / 100),
-        ]
-      }
-    ]
-  };
+
+const expendituresByGroupChartData = computed(() => {
+  let chartData: ChartData<'pie'> = { labels: [], datasets: [ { data: [] } ] };
+
+  Object.values(TransactionType).forEach((type) => {
+    chartData.labels?.push(getNameOfTransactionType(type));
+    chartData.datasets[0].data.push((userDataStore.summarizedExpenditures(dayjs().subtract(12, 'months').unix(), dayjs().unix(), type) / 100))
+  });
+
+  return chartData;
+});
+
+const expendituresVsEarningsChartData = computed(() => {
+  let chartData: ChartData<'line'> = {labels: [], datasets: [{data: [], label: "Expenditures"}, {data: [], label: "Earnings", borderColor: "#8CBEB2A0"}]};
+
+  for(let i = 0; i < 12; i++)
+  {
+    chartData.labels?.push(
+      dayjs().subtract(i, 'weeks').format()
+    );
+    console.log("Start time: " + dayjs().subtract((i + 1), 'months').unix());
+    console.log("End time: " + dayjs().subtract((i), 'months').unix());
+    chartData.datasets[0].data.push(
+      (userDataStore.summarizedExpenditures(dayjs().subtract((i + 1), 'months').unix(), dayjs().subtract(i, 'months').unix()) / 100)
+    );
+    chartData.datasets[1].data.push(
+      (userDataStore.summarizedEarnings(dayjs().subtract((i + 1), 'months').unix(), dayjs().subtract(i, 'months').unix()) / 100)
+    );
+  }
+
+  return chartData;
 });
 </script>
 
@@ -202,7 +212,7 @@ const expendituresByGroupGraphData = computed(() => {
                 }
               }
             }"
-            :chart-data="cashAssetDevelopmentGraphData"
+            :chart-data="cashAssetDevelopmentChartData"
           />
         </InfoBox>
 
@@ -226,7 +236,7 @@ const expendituresByGroupGraphData = computed(() => {
               offset: 0,
               backgroundColor: ['#5C4B51A0', '#8CBEB2A0', '#F3B562A0', '#F06060A0', '#F2EBBFA0']
             }"
-            :chart-data="earningsByGroupGraphData"
+            :chart-data="earningsByGroupChartData"
            />
         </InfoBox>
 
@@ -250,7 +260,7 @@ const expendituresByGroupGraphData = computed(() => {
               offset: 0,
               backgroundColor: ['#5C4B51A0', '#8CBEB2A0', '#F3B562A0', '#F06060A0', '#F2EBBFA0']
             }"
-            :chart-data="expendituresByGroupGraphData"
+            :chart-data="expendituresByGroupChartData"
           />
         </InfoBox>
 
@@ -262,34 +272,41 @@ const expendituresByGroupGraphData = computed(() => {
             Last 12 months
           </template>
           <LineChart css-classes="earnings-expenditures-comparison-chart" :chart-options="
-          {
-            plugins: {
-              legend: {
-                display: false
-              }
-            },
-            tension: 0.5,
-            borderColor: 'rgb(200, 120, 140)',
-            borderWidth: 3,
-            pointRadius: 2,
-            animation: true,
-            scales: {
-              y: {
-                position: 'right',
-                grid: {
-                  borderColor: 'rgb(123, 123, 123, 0.2)',
-                  color: 'rgb(123, 123, 123, 0.2)',
-                  drawBorder: true
+            {
+              plugins: {
+                legend: {
+                  display: true
                 }
               },
-              x: {
-                grid: {
-                  display: false,
-                  borderColor: 'rgb(123, 123, 123, 0.2)'
+              tension: 0.5,
+              borderColor: 'rgb(200, 120, 140)',
+              borderWidth: 3,
+              pointRadius: 2,
+              animation: true,
+              scales: {
+                y: {
+                  position: 'right',
+                  grid: {
+                    borderColor: 'rgb(123, 123, 123, 0.2)',
+                    color: 'rgb(123, 123, 123, 0.2)',
+                    drawBorder: true
+                  }
+                },
+                x: {
+                  type: 'time',
+                  time: {
+                      unit: 'month',
+                      tooltipFormat: 'MMMM'
+                  },
+                  grid: {
+                    display: false,
+                    borderColor: 'rgb(123, 123, 123, 0.2)'
+                  }
                 }
               }
-            }
-          }" />
+            }"
+            :chart-data="expendituresVsEarningsChartData"
+          />
         </InfoBox>
       </div>
     </el-main>
