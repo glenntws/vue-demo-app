@@ -1,0 +1,148 @@
+@import "./base.css";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+// Default fix :D
+* {
+  box-sizing: border-box;
+}
+
+
+// Some universal theming...
+:root {
+  --el-menu-bg-color: transparent;
+  --el-menu-hover-bg-color: rgb(255, 255, 255, 0.5);
+  --el-menu-active-color: rgb(139, 121, 17);  
+  --color-text: rgb(20, 20, 20);
+
+  .el-aside { 
+    h1 {
+        font-weight: 600;
+        font-size: 3rem;
+        margin: 1rem;
+    }
+  }
+
+  .el-header {
+    --el-header-height: fit-content;
+    --el-header-padding: 3rem 2rem 0.5rem 2rem;
+  }
+
+  .el-main {
+    --el-main-padding: 1rem 2rem 1rem 2rem;
+  }
+
+  .el-header,.el-main {
+    h1 {
+      font-weight: 600;
+      font-size: 3.25rem;
+      color: var(--el-text-color-primary);
+    }
+
+    h2 {
+      font-weight: 500;
+      font-size: 2rem;
+      color: var(--el-text-color-primary);
+    }
+
+    h3 {
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--el-text-color-regular);
+    }
+  }
+
+  .el-menu * {
+    font-weight: 500;
+  }
+
+  .el-table {
+    width: 100%;
+    border-radius: 0.5rem;
+
+    --el-table-header-text-color: var(--el-text-color-primary);
+    --el-table-text-color: var(--el-text-color-primary);
+    --el-table-header-bg-color: rgb(0,0,0,0.05);
+    --el-table-bg-color: transparent;
+    --el-bg-color: transparent;
+    --el-table-tr-bg-color: transparent;
+    --el-table-border-color: rgb(0, 0, 0, 0.1);
+    --el-table-border: 1px solid var(--el-table-border-color);
+  }
+
+  .el-button {
+    --el-button-font-weight: 500;
+    --el-fill-color-blank: rgb(0,0,0,0.1);
+    --el-button-border-color: transparent;
+  }
+
+  .el-input {
+    --el-input-text-color: var(--el-text-color-primary);
+    --el-fill-color-blank: rgb(0,0,0,0.1);
+    --el-input-placeholder-color: var(--el-text-color-regular);
+    --el-border-color: transparent;
+  }
+
+  .el-overlay {
+    backdrop-filter: blur(20px);
+    --el-overlay-color-lighter: transparent;
+  }
+
+  .el-dialog {
+    --el-bg-color: rgb(255, 255, 255, 0.5);
+    border-radius: 16px;
+  }
+
+  .el-popper {
+    --el-bg-color-overlay: rgb(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    --el-popper-border-radius: 16px;
+    
+    .el-select-dropdown,.el-picker-panel {
+      border-radius: 16px;
+      overflow: hidden;
+    }
+  }
+
+  .custom-grid {
+    display: flex;
+    gap: 2rem;
+    align-items: stretch;
+    justify-content: space-between;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .custom-grid * {
+    flex-grow: 1;
+  }
+}
+
+
+
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  background: -webkit-radial-gradient(top left, ellipse, #fceda4 0%, transparent), linear-gradient(170deg, #f5b7ae5f, #ffb7adcf 60%, #f897c6cf, #dd8de9cf);
+	background-size: 200% 200%;
+  animation: gradient 30s ease infinite;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 0%;
+	}
+	25% {
+		background-position: 100% 0%;
+	}
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+	100% {
+		background-position: 0% 0%;
+	}
+}
